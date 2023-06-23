@@ -1,16 +1,16 @@
 pub mod extract_link {
-    use std::{collections::HashMap, hash::Hash};
+    use std::{collections::HashMap, io::ErrorKind, io::Error};
     use regex::{Regex};
     #[derive(Debug)]
     pub struct ParsedLink {
         url: String,
         queries: HashMap<String, String>,
     }
-    pub fn from_string(data: &str) -> Result<ParsedLink, &str> {
+    pub fn from_string(data: &str) -> Result<ParsedLink, Error> {
         let link_regex = Regex::new(r"https:\/\/.+?getGachaLog").unwrap();
         let link = match link_regex.captures_iter(&data).into_iter().last() {
-            None => return Err("No link_path found"),
-            Some(found_link) => found_link.get(0).unwrap().as_str().to_string(),
+            None => return Err(Error::new(ErrorKind::NotFound, "Link not found")),
+            Some(found_link) => found_link.get(0).unwrap().as_str().to_owned(),
         };
 
         let queries_regex_raw = vec![
@@ -25,11 +25,11 @@ pub mod extract_link {
         for query_regex_raw in queries_regex_raw {
             let query_regex = Regex::new(query_regex_raw).unwrap();
             let query = match query_regex.captures_iter(&data).into_iter().last(){
-                None => return Err("Required query not found"),
-                Some(found_query) => found_query.get(0).unwrap().as_str().to_string(),
+                None => return Err(Error::new(ErrorKind::NotFound, "Required query not found")),
+                Some(found_query) => found_query.iter().last().unwrap().unwrap().as_str(),
             };
             let query_split: Vec<&str> = query.split("=").collect();
-            queries_hashmap.insert(query_split[0].to_string(), query_split[1].to_string());
+            queries_hashmap.insert(query_split[0].to_owned(), query_split[1].to_owned());
         };
         Ok(ParsedLink {
             url: link,
