@@ -25,6 +25,7 @@ pub mod extract_link {
             };
             link.push_str(format!("&{query}").as_str());
         };
+        link.push_str(format!("&size=20").as_str());
         Ok(link)
     }
 }
