@@ -38,8 +38,8 @@ fn main() -> std::io::Result<()> {
     // unsafe because file is not entirely utf-8
     let data_string = unsafe { from_utf8_unchecked(&buffer) };
 
-    let link_struct = from_string(data_string)?;
+    let api_link = from_string(data_string)?;
 
-    println!("{:#?}", link_struct);
+    println!("{:#?}", api_link);
     Ok(())
 }
