@@ -3,7 +3,7 @@ pub mod extract_link {
     use regex::{Regex};
  
     pub fn from_string(data: &str) -> Result<String, Error> {
-        let base_link_regex = Regex::new(r"https:\/\/.+?getGachaLog").unwrap();
+        let base_link_regex = Regex::new(r"https:\/\/.+?getGachaLog\?").unwrap();
         let mut link = match base_link_regex.captures_iter(&data).into_iter().last() {
             None => return Err(Error::new(ErrorKind::NotFound, "Link not found")),
             Some(found_link) => found_link.get(0).unwrap().as_str().to_owned(),
@@ -23,7 +23,7 @@ pub mod extract_link {
                 None => return Err(Error::new(ErrorKind::NotFound, "Required query not found")),
                 Some(found_query) => found_query.iter().last().unwrap().unwrap().as_str(),
             };
-            link.push_str(query);
+            link.push_str(format!("&{query}").as_str());
         };
         Ok(link)
     }
