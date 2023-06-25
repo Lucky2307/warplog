@@ -1,6 +1,6 @@
 pub mod api_requests {
     use serde_derive::Deserialize;
-    use std::{io::ErrorKind, io::Error};
+    use std::{io::Error, io::ErrorKind};
 
     #[derive(Deserialize, Debug)]
     pub struct ListData {
@@ -30,7 +30,7 @@ pub mod api_requests {
         message: String,
         data: ResponseData,
     }
-    pub fn get_warp_data(base_link: String) -> Result<Vec<(u8, Vec<ListData>)>, Error>{
+    pub fn get_warp_data(base_link: String) -> Result<Vec<(u8, Vec<ListData>)>, Error> {
         let gacha_types: Vec<u8> = vec![
             1,  // Permanent
             2,  // Departure
@@ -42,12 +42,14 @@ pub mod api_requests {
             let mut list_data: Vec<ListData> = vec![];
             let mut end_id: String = "0".to_owned();
             while {
-                let mut res: WarpResponse = reqwest::blocking::get(format!("{base_link}&gacha_type={gacha_type}&end_id={end_id}"))
+                let mut res: WarpResponse = reqwest::blocking::get(format!(
+                    "{base_link}&gacha_type={gacha_type}&end_id={end_id}"
+                ))
                 .unwrap()
                 .json()
                 .unwrap();
                 match &res.retcode {
-                    0 => {},
+                    0 => {}
                     -100 => return Err(Error::new(ErrorKind::InvalidInput, "Invalid authkey")),
                     -101 => return Err(Error::new(ErrorKind::TimedOut, "Authkey timed out")),
                     _ => return Err(Error::new(ErrorKind::InvalidInput, "Generic error")),
