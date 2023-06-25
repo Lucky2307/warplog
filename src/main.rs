@@ -1,4 +1,5 @@
 mod extract_link;
+mod api_request;
 
 use std::fs::File;
 use std::io::Read;
@@ -9,6 +10,7 @@ use regex::Regex;
 
 use extract_link::extract_link::from_string;
 
+use crate::api_request::api_requests::get_warp_data;
 fn main() -> std::io::Result<()> {
     // Get game path from log
     // TODO: Manual game path input
@@ -40,6 +42,9 @@ fn main() -> std::io::Result<()> {
 
     let api_link = from_string(data_string)?;
 
-    println!("{:#?}", api_link);
+    let warp_data = match get_warp_data(api_link) {
+        Ok(data) => data,
+        Err(error_code) => return Err(error_code),
+    };
     Ok(())
 }
