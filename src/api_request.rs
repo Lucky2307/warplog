@@ -16,6 +16,16 @@ pub mod api_requests {
         rank_type: String,
         id: String,
     }
+    impl ListData {
+        pub fn get_presentable_data(&self) -> Vec<String> {
+            vec![
+                format!("{}", self.name), 
+                format!("{}", self.item_type), 
+                format!("{}", self.rank_type), 
+                format!("{}", self.time),
+            ]
+        }
+    }
     #[derive(Deserialize, Debug)]
     struct ResponseData {
         page: String,
@@ -28,38 +38,53 @@ pub mod api_requests {
     struct WarpResponse {
         retcode: i8,
         message: String,
-        data: ResponseData,
+        data: Option<ResponseData>,
     }
-    pub fn get_warp_data(base_link: String) -> Result<Vec<(u8, Vec<ListData>)>, Error> {
+
+    pub struct Response {
+        /// 1: Permanent
+        /// 2: Departure
+        /// 11: Character
+        /// 12: Light Cone
+        gacha_type: u8,
+        data: Vec<ListData>
+    }
+    impl Response {
+        pub fn get_data (&self) -> &Vec<ListData> {
+            &self.data
+        }
+    }
+    /// Return an array for each gacha type.
+    pub fn get_warp_data(base_link: String) -> Result<Vec<Response>, Error> {
         let gacha_types: Vec<u8> = vec![
-            1,  // Permanent
+            //1,  // Permanent
             2,  // Departure
-            11, // Character
-            12, // Light cone
+            //11, // Character
+            //12, // Light cone
         ];
-        let mut result: Vec<(u8, Vec<ListData>)> = vec![];
+        let mut result: Vec<Response> = vec![];
         for gacha_type in gacha_types {
             let mut list_data: Vec<ListData> = vec![];
             let mut end_id: String = "0".to_owned();
             while {
-                let mut res: WarpResponse = reqwest::blocking::get(format!(
+                let res: WarpResponse = reqwest::blocking::get(format!(
                     "{base_link}&gacha_type={gacha_type}&end_id={end_id}"
                 ))
                 .unwrap()
                 .json()
                 .unwrap();
-                match &res.retcode {
-                    0 => {}
+                let mut data = match &res.retcode {
+                    0 => {res.data.unwrap()}
                     -100 => return Err(Error::new(ErrorKind::InvalidInput, "Invalid authkey")),
                     -101 => return Err(Error::new(ErrorKind::TimedOut, "Authkey timed out")),
                     _ => return Err(Error::new(ErrorKind::InvalidInput, "Generic error")),
-                }
-                end_id = res.data.list.last().unwrap().id.as_str().to_owned();
-                let list_len = res.data.list.len();
-                list_data.append(&mut res.data.list);
+                };
+                end_id = data.list.last().unwrap().id.as_str().to_owned();
+                let list_len = data.list.len();
+                list_data.append(&mut data.list);
                 list_len >= 20
             } {}
-            result.append(&mut vec![(gacha_type, list_data)]);
+            result.append(&mut vec![Response{gacha_type: gacha_type, data: list_data}]);
         }
         Ok(result)
     }

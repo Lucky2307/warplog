@@ -1,5 +1,6 @@
 mod api_request;
 mod extract_link;
+mod export;
 
 use directories::BaseDirs;
 use regex::Regex;
@@ -57,5 +58,8 @@ fn main() -> std::io::Result<()> {
         Ok(data) => data,
         Err(error_code) => return Err(error_code),
     };
+    for gacha in warp_data {
+        gacha.to_csv().unwrap();
+    }
     Ok(())
 }
