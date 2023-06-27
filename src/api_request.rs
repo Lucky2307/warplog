@@ -19,9 +19,9 @@ pub mod api_requests {
     impl ListData {
         pub fn get_presentable_data(&self) -> Vec<String> {
             vec![
-                format!("{}", self.name), 
-                format!("{}", self.item_type), 
-                format!("{}", self.rank_type), 
+                format!("{}", self.name),
+                format!("{}", self.item_type),
+                format!("{}", self.rank_type),
                 format!("{}", self.time),
             ]
         }
@@ -47,10 +47,10 @@ pub mod api_requests {
         /// 11: Character
         /// 12: Light Cone
         gacha_type: u8,
-        data: Vec<ListData>
+        data: Vec<ListData>,
     }
     impl Response {
-        pub fn get_data (&self) -> &Vec<ListData> {
+        pub fn get_data(&self) -> &Vec<ListData> {
             &self.data
         }
     }
@@ -58,9 +58,9 @@ pub mod api_requests {
     pub fn get_warp_data(base_link: String) -> Result<Vec<Response>, Error> {
         let gacha_types: Vec<u8> = vec![
             //1,  // Permanent
-            2,  // Departure
-            //11, // Character
-            //12, // Light cone
+            2, // Departure
+              //11, // Character
+              //12, // Light cone
         ];
         let mut result: Vec<Response> = vec![];
         for gacha_type in gacha_types {
@@ -74,7 +74,7 @@ pub mod api_requests {
                 .json()
                 .unwrap();
                 let mut data = match &res.retcode {
-                    0 => {res.data.unwrap()}
+                    0 => res.data.unwrap(),
                     -100 => return Err(Error::new(ErrorKind::InvalidInput, "Invalid authkey")),
                     -101 => return Err(Error::new(ErrorKind::TimedOut, "Authkey timed out")),
                     _ => return Err(Error::new(ErrorKind::InvalidInput, "Generic error")),
@@ -84,7 +84,10 @@ pub mod api_requests {
                 list_data.append(&mut data.list);
                 list_len >= 20
             } {}
-            result.append(&mut vec![Response{gacha_type: gacha_type, data: list_data}]);
+            result.append(&mut vec![Response {
+                gacha_type: gacha_type,
+                data: list_data,
+            }]);
         }
         Ok(result)
     }

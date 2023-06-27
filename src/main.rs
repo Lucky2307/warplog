@@ -1,6 +1,6 @@
 mod api_request;
-mod extract_link;
 mod export;
+mod extract_link;
 
 use directories::BaseDirs;
 use regex::Regex;
